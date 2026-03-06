@@ -1,0 +1,12 @@
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:3.0.2
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack/data
+    volumes:
+      - ./localstack-data:/var/lib/localstack
