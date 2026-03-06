@@ -10,5 +10,3 @@ services:
       - DATA_DIR=/var/lib/localstack/data
     volumes:
       - ./localstack-data:/var/lib/localstack
-       
-       
