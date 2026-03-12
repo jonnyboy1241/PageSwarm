@@ -20,9 +20,9 @@
 
 ```mermaid
 flowchart TD
-    A([📄 Upload PDF]) --> B[API Service<br/>FastAPI]
-    B --> C[(Object Store<br/>S3 / LocalStack)]
-    C --> D[[Message Queue<br/>SQS]]
+    A([📄 Upload PDF]) --> B[API Service]
+    B --> C[(Object Store)]
+    C --> D[[Message Queue]]
     D --> W1[🐝 Worker 1]
     D --> W2[🐝 Worker 2]
     D --> W3[🐝 Worker 3]
@@ -34,107 +34,76 @@ flowchart TD
 
 ---
 
-## 📌 What Is This?
+## ✨ Project Overview
 
-PageSwarm is a **distributed document processing pipeline** that takes a PDF, splits it into individual pages, and fans out processing across a swarm of parallel workers. Each worker independently extracts text from its assigned page, and the system reassembles everything into a single coherent result.
+PageSwarm is a distributed document processing platform for page-level fan-out workloads.
+It is designed around a simple but powerful flow:
 
-It's a showcase of real-world distributed systems patterns — built with **Python**, **FastAPI**, **AWS (LocalStack)**, and **Docker Compose**.
+1. Accept a document upload.
+2. Split the work into page-sized jobs.
+3. Dispatch jobs through a queue.
+4. Process pages in parallel workers.
+5. Reassemble and return the aggregate output.
 
-### Key Concepts
+The project demonstrates production-style distributed systems patterns with a local developer setup powered by Docker Compose and LocalStack.
 
-| Concept | How It's Demonstrated |
+## 🧠 Why This Project Exists
+
+PageSwarm exists to demonstrate how to build reliable, scalable processing pipelines with clear service boundaries:
+
+- Decoupled producers and consumers via messaging
+- Horizontal worker scaling for throughput
+- Fault-tolerant retry behavior for transient failures
+- Idempotent page processing to survive duplicates
+- Structured observability for API and worker flows
+
+## 🧱 Architecture At A Glance
+
+| Layer | Responsibility |
 |---|---|
-| **Distributed Job Processing** | Documents are broken into page-level jobs dispatched to independent workers |
-| **Queue-Based Architecture** | SQS decouples the API from workers — producers and consumers operate independently |
-| **Parallel Processing** | Multiple workers drain the queue concurrently, slashing total processing time |
-| **Fault Tolerance & Retries** | If a worker crashes mid-page, the message returns to the queue for another worker |
-| **Horizontal Scaling** | Spin up more workers with a single flag: `--scale worker=5` |
-| **Idempotent Operations** | Processing the same page twice won't corrupt results |
+| API | Accept uploads, validate input, create processing jobs |
+| Storage | Persist source documents and intermediate/final artifacts |
+| Queue | Buffer page-level jobs and decouple API from workers |
+| Workers | Process each page independently and emit structured outputs |
+| Aggregation | Reorder and combine page results into final output |
 
----
+## 📦 Repository Layout
 
-## 📋 Functional Requirements
-
-### Document Upload
-
-- Accept a PDF document via the API
-- Store the document in object storage (S3)
-- Generate a unique job ID
-- Determine the total number of pages
-
-### Page Job Fan-Out
-
-- Split the uploaded document into individual pages
-- Create one job per page
-- Publish each job to a message queue (SQS)
-- Each job must include the job ID, page number, and document location
-
-### Worker Processing
-
-- Workers poll the queue for page jobs
-- Retrieve the assigned document page from storage
-- Extract text from the page
-- Produce structured output with the extracted content
-- Support horizontal scaling (multiple workers running simultaneously)
-
-### Result Storage
-
-- Store processed page results in a persistent datastore
-- Each result must contain: job ID, page number, extracted content, and processing timestamp
-
-### Result Aggregation
-
-- Once all pages for a job are processed, aggregate results in correct page order
-- Produce a final combined document result
-
-### Job Status
-
-- Users can query the progress of any job
-- Statuses: `queued` → `processing` → `completed` or `failed`
-- Response includes pages processed vs. total pages
-
----
-
-## ⚙️ Non-Functional Requirements
-
-| Requirement | Detail |
+| Path | Purpose |
 |---|---|
-| **Scalability** | Horizontal worker scaling — more workers = faster processing |
-| **Fault Tolerance** | Worker crashes return the job to the queue for retry by another worker |
-| **Idempotency** | Duplicate processing of the same page must not corrupt results |
-| **Observability** | Structured logging of job creation, page dispatch, worker activity, and completion |
+| `docker-compose.yml` | Local orchestration for all services |
+| `server/` | FastAPI service for upload and API workflows |
+| `localstack-data/` | LocalStack data/state for local development |
 
----
+Module-level technical docs live with each component.
 
-## 🛠️ Tech Stack
+- API module docs: [server/README.md](server/README.md)
+
+## 🛠️ Technology Stack
 
 | Component | Technology |
 |---|---|
-| **Language** | Python |
-| **API** | FastAPI |
-| **Object Storage** | AWS S3 (LocalStack) |
-| **Message Queue** | AWS SQS (LocalStack) |
-| **AWS SDK** | boto3 |
-| **PDF Processing** | PyPDF |
-| **Infrastructure** | Docker Compose + LocalStack |
+| Language | Python 3.12+ |
+| API | FastAPI |
+| Queue / Object APIs | AWS SQS + S3 (via LocalStack in dev) |
+| PDF handling | PyPDF |
+| Runtime / Orchestration | Docker + Docker Compose |
 
----
+## 🚀 Quick Start (Whole Project)
 
-## ▶️ Run With Docker Compose
-
-Start the API and LocalStack services:
+Start all defined services:
 
 ```bash
 docker compose up --build
 ```
 
-Verify the API health endpoint:
+Verify API health:
 
 ```bash
 curl http://localhost:8000/api/health
 ```
 
-Upload a PDF:
+Try a document upload:
 
 ```bash
 curl -X POST \
@@ -142,24 +111,33 @@ curl -X POST \
     http://localhost:8000/api/v1/documents/upload
 ```
 
----
+## 🗺️ Documentation Strategy
+
+This README is intentionally high-level.
+
+- Root README: project intent, architecture, quick start, and navigation
+- Component README files: implementation details, local module commands, and technical reference
+
+## ✅ Current Status
+
+| Area | Status |
+|---|---|
+| API foundation | In progress |
+| LocalStack integration | In progress |
+| Queue fan-out | Planned |
+| Worker orchestration | Planned |
+| Aggregation pipeline | Planned |
 
 ## 🗺️ Roadmap
 
-- [ ] Core API: upload, status, result endpoints
+- [ ] Core API endpoints: upload, status, result
 - [ ] S3 document storage integration
-- [ ] SQS fan-out for page jobs
-- [ ] Worker pool with queue polling
-- [ ] Text extraction with PyPDF
-- [ ] Result aggregation pipeline
-- [ ] Docker Compose orchestration
-- [ ] Fault tolerance & retry logic
-- [ ] Structured logging & observability
-- [ ] Integration tests
-- [ ] Dead letter queue for poison messages
-- [ ] WebSocket for real-time progress updates
-- [ ] Support for additional file types (DOCX, images via OCR)
-- [ ] Prometheus metrics endpoint
+- [ ] SQS page-job fan-out
+- [ ] Worker pool + page processing loop
+- [ ] Result aggregation by page order
+- [ ] Retry and dead-letter strategy
+- [ ] Integration and resilience tests
+- [ ] Live progress updates
 
 ---
 
