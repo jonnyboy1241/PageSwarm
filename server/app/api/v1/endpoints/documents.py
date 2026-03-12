@@ -4,7 +4,7 @@ import io
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
 from pypdf import PdfReader
 
 from app.core.logging import get_logger
@@ -14,15 +14,23 @@ router = APIRouter(prefix="/documents")
 logger = get_logger(__name__)
 
 
+# Keep uploads bounded to 25 MB to reduce memory and parsing DoS risk.
+MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024
+
+
 @router.post(
     "/upload",
     response_model=UploadDocumentResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-async def upload_document(file: UploadFile = File(...)) -> UploadDocumentResponse:
+async def upload_document(
+    request: Request,
+    file: UploadFile = File(...),
+) -> UploadDocumentResponse:
     """Validate an uploaded PDF and return queued job metadata.
 
     Args:
+        request: Incoming HTTP request containing headers for size prechecks.
         file: Uploaded PDF file payload provided by multipart form-data.
 
     Returns:
@@ -34,15 +42,38 @@ async def upload_document(file: UploadFile = File(...)) -> UploadDocumentRespons
             detail="Only PDF files are supported",
         )
 
-    payload = await file.read()
-    if not payload:
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_UPLOAD_SIZE_BYTES:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"Uploaded file exceeds {MAX_UPLOAD_SIZE_BYTES} bytes",
+                )
+        except ValueError:
+            logger.warning(
+                "invalid_content_length_header",
+                extra={"content_length": content_length},
+            )
+
+    file.file.seek(0, io.SEEK_END)
+    size_bytes = file.file.tell()
+    file.file.seek(0)
+
+    if size_bytes == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Uploaded file is empty",
         )
 
+    if size_bytes > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Uploaded file exceeds {MAX_UPLOAD_SIZE_BYTES} bytes",
+        )
+
     try:
-        reader = PdfReader(io.BytesIO(payload))
+        reader = PdfReader(file.file)
         page_count = len(reader.pages)
     except Exception as exc:
         logger.warning(
@@ -64,7 +95,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadDocumentRespons
     response = UploadDocumentResponse(
         job_id=job_id,
         filename=file.filename or "uploaded.pdf",
-        size_bytes=len(payload),
+        size_bytes=size_bytes,
         total_pages=page_count,
         status="queued",
         accepted_at=datetime.now(UTC),
