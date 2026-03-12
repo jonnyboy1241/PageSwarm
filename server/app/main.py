@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from app.api.endpoints.health import router as health_router
 from app.api.v1.api import api_router
-from app.api.v1.endpoints.health import router as health_router
 from app.core.logging import get_logger, setup_logging
 from app.core.middleware import RequestContextMiddleware
 
