@@ -20,9 +20,9 @@
 
 ```mermaid
 flowchart TD
-    A([📄 Upload PDF]) --> B[API Service\nFastAPI]
-    B --> C[(Object Store\nS3 / LocalStack)]
-    C --> D[[Message Queue\nSQS]]
+    A([📄 Upload PDF]) --> B[API Service<br/>FastAPI]
+    B --> C[(Object Store<br/>S3 / LocalStack)]
+    C --> D[[Message Queue<br/>SQS]]
     D --> W1[🐝 Worker 1]
     D --> W2[🐝 Worker 2]
     D --> W3[🐝 Worker 3]
