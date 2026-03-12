@@ -1,4 +1,14 @@
 services:
+  api:
+    container_name: pageswarm-api
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - localstack
+
   localstack:
     container_name: localstack
     image: localstack/localstack:3.0.2
