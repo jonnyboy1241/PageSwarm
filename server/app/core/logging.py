@@ -1,3 +1,5 @@
+"""Structured JSON logging utilities and request context propagation."""
+
 import json
 import logging
 from contextvars import ContextVar
@@ -9,6 +11,14 @@ request_id_ctx_var: ContextVar[str | None] = ContextVar("request_id", default=No
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
+        """Serialize log records into a JSON object with contextual fields.
+
+        Args:
+            record: Python log record emitted by the logging framework.
+
+        Returns:
+            JSON string representation of the structured log payload.
+        """
         payload: dict[str, Any] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
@@ -41,6 +51,14 @@ class JsonFormatter(logging.Formatter):
 
 
 def setup_logging(level: int = logging.INFO) -> None:
+    """Configure root logging handlers to emit structured JSON logs.
+
+    Args:
+        level: Minimum logging severity level for the root logger.
+
+    Returns:
+        None.
+    """
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
     root_logger.handlers.clear()
@@ -51,4 +69,12 @@ def setup_logging(level: int = logging.INFO) -> None:
 
 
 def get_logger(name: str) -> logging.Logger:
+    """Return a logger instance scoped to the provided module or component name.
+
+    Args:
+        name: Logger name, typically the module `__name__`.
+
+    Returns:
+        Configured logger instance for emitting application logs.
+    """
     return logging.getLogger(name)

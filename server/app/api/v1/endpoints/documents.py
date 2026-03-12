@@ -1,3 +1,5 @@
+"""Document ingestion endpoints for PDF upload and job enqueue metadata."""
+
 import io
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -18,6 +20,14 @@ logger = get_logger(__name__)
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def upload_document(file: UploadFile = File(...)) -> UploadDocumentResponse:
+    """Validate an uploaded PDF and return queued job metadata.
+
+    Args:
+        file: Uploaded PDF file payload provided by multipart form-data.
+
+    Returns:
+        UploadDocumentResponse containing accepted upload metadata and queue status.
+    """
     if file.content_type not in {"application/pdf", "application/x-pdf"}:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

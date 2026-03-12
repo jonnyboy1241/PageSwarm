@@ -53,6 +53,17 @@ fastapi-project/
 - Keep session/engine wiring in `app/db/`; database migrations belong in top-level `alembic/`.
 - Use `pytest` for unit and integration coverage across API, CRUD, and service layers.
 
+## Commenting and Docstrings
+
+- Require a module-level docstring in every Python module describing purpose and scope.
+- Require method/function-level docstrings for public methods and functions.
+- Require method/function docstrings to include explicit `Args` and `Returns` sections.
+- In `Args`, describe each parameter's purpose (including context parameters when used).
+- In `Returns`, describe the returned value and its meaning for callers.
+- Keep docstrings concise and descriptive while still documenting behavior and contracts.
+- Use inline comments sparingly and only for non-obvious decisions, constraints, or
+    edge-case handling.
+
 ## Example Entrypoint
 
 ```python

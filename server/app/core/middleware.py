@@ -1,3 +1,5 @@
+"""HTTP middleware for request correlation IDs and request lifecycle logging."""
+
 from time import perf_counter
 from uuid import uuid4
 
@@ -12,6 +14,15 @@ logger = get_logger(__name__)
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
+        """Attach request context, log request outcomes, and propagate request IDs.
+
+        Args:
+            request: Incoming HTTP request being processed.
+            call_next: Next ASGI handler in the middleware chain.
+
+        Returns:
+            Response produced by downstream handlers with `x-request-id` header set.
+        """
         request_id = request.headers.get("x-request-id", str(uuid4()))
         ctx_token = request_id_ctx_var.set(request_id)
 

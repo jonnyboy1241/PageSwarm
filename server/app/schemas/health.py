@@ -1,3 +1,5 @@
+"""Schema models for API health endpoints."""
+
 from datetime import datetime
 
 from pydantic import BaseModel

@@ -1,3 +1,5 @@
+"""Composition root for version 1 API routers."""
+
 from fastapi import APIRouter
 
 from app.api.v1.endpoints.documents import router as documents_router
