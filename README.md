@@ -120,6 +120,30 @@ It's a showcase of real-world distributed systems patterns — built with **Pyth
 
 ---
 
+## ▶️ Run With Docker Compose
+
+Start the API and LocalStack services:
+
+```bash
+docker compose up --build
+```
+
+Verify the API health endpoint:
+
+```bash
+curl http://localhost:8000/api/health
+```
+
+Upload a PDF:
+
+```bash
+curl -X POST \
+    -F "file=@/path/to/document.pdf" \
+    http://localhost:8000/api/v1/documents/upload
+```
+
+---
+
 ## 🗺️ Roadmap
 
 - [ ] Core API: upload, status, result endpoints

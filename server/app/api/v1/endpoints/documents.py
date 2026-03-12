@@ -37,7 +37,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadDocumentRespons
     except Exception as exc:
         logger.warning(
             "invalid_pdf_upload",
-            extra={"filename": file.filename, "error": str(exc)},
+            extra={"document_name": file.filename, "error": str(exc)},
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -63,7 +63,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadDocumentRespons
         "pdf_upload_accepted",
         extra={
             "job_id": response.job_id,
-            "filename": response.filename,
+            "document_name": response.filename,
             "size_bytes": response.size_bytes,
             "total_pages": response.total_pages,
         },

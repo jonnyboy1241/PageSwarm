@@ -26,7 +26,7 @@ class JsonFormatter(logging.Formatter):
             "duration_ms",
             "job_id",
             "page_number",
-            "filename",
+            "document_name",
             "size_bytes",
             "total_pages",
             "error",
