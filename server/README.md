@@ -19,21 +19,20 @@ server/
 	Dockerfile
 	pyproject.toml
 	uv.lock
-	app/
-		main.py
-		api/
-			endpoints/
-				health.py
-			v1/
-				api.py
-				endpoints/
-					documents.py
-		core/
-			logging.py
-			middleware.py
-		schemas/
-			documents.py
+	main.py
+	api/
+		endpoints/
 			health.py
+		v1/
+			api.py
+			endpoints/
+				documents.py
+	core/
+		logging.py
+		middleware.py
+	schemas/
+		documents.py
+		health.py
 ```
 
 ## API Endpoints
@@ -78,7 +77,7 @@ uv sync --frozen --no-dev
 2. Run the API:
 
 ```bash
-uv run --frozen --no-sync uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uv run --frozen --no-sync uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 3. Verify health endpoint:

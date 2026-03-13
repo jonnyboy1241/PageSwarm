@@ -5,10 +5,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from app.api.endpoints.health import router as health_router
-from app.api.v1.api import api_router
-from app.core.logging import get_logger, setup_logging
-from app.core.middleware import RequestContextMiddleware
+from api.endpoints.health import router as health_router
+from api.v1.api import api_router
+from core.logging import get_logger, setup_logging
+from core.middleware import RequestContextMiddleware
 
 logger = get_logger(__name__)
 
