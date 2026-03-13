@@ -7,8 +7,8 @@ from uuid import uuid4
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
 from pypdf import PdfReader
 
-from app.core.logging import get_logger
-from app.schemas.documents import UploadDocumentResponse
+from core.logging import get_logger
+from schemas.documents import UploadDocumentResponse
 
 router = APIRouter(prefix="/documents")
 logger = get_logger(__name__)
